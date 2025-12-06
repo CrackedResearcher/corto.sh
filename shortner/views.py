@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from .serializers import UrlReadSerializer, UrlCreateSerializer
+from .serializers import AnalyticsDataReadSerializer, UrlReadSerializer, UrlCreateSerializer
 from .services import url_services
 
 
@@ -82,13 +82,21 @@ class UrlRedirectView(APIView):
                 "message": "No such url found"
             }, status=status.HTTP_404_NOT_FOUND)
 
+        _ = url_services.update_visit_count(slug)
         url_data = UrlReadSerializer(url).data
         return Response(url_data, status=status.HTTP_200_OK)
 
 class UrlAnalyticsView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        pass
+    def get(self, request, slug):
+        analytics_data = url_services.get_analytics_for_url(slug)
+        if not analytics_data:
+            return Response({
+                "error": "No data found for this url"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        data = AnalyticsDataReadSerializer(analytics_data).data
+        return Response(data, status=status.HTTP_200_OK)
 
 

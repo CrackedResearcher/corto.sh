@@ -26,4 +26,4 @@ class AnalyticsDataReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AnalyticData
-        fields = ['total_visits', 'url', 'short_url']
+        fields = ['total_visits', 'url', 'short_url', 'last_visited']

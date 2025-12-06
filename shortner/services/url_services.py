@@ -2,6 +2,8 @@ from ..models import Url
 from django.db import transaction
 from .url_generate import generate_url_slug
 import os
+from django.db.models import F
+from ..models import AnalyticData
 
 def check_slug_exists(slug):
     url = Url.objects.filter(slug=slug)
@@ -63,3 +65,23 @@ def get_url_details_from_slug(slug):
         return None
     else:
         return url
+
+
+def update_visit_count(slug):
+    url = Url.objects.filter(slug=slug).exists()
+    if url:
+        with transaction.atomic():
+            url_instance = Url.objects.filter(slug=slug).first()
+            analytic_obj, created = AnalyticData.objects.get_or_create(url=url_instance)
+            AnalyticData.objects.filter(id=analytic_obj.id).update(total_visits=F('total_visits') + 1)
+    else:
+        return None
+    
+
+def get_analytics_for_url(slug):
+    analysis_obj = AnalyticData.objects.filter(url__slug=slug).first()
+    print("ANALYSIS DATA ==>", analysis_obj)
+    if not analysis_obj:
+        return None
+    else:
+        return analysis_obj
