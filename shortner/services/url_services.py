@@ -1,4 +1,7 @@
 from ..models import Url
+from django.db import transaction
+from .url_generate import generate_url_slug
+import os
 
 def get_url_data(user):
     url_data = Url.objects.filter(user=user)
@@ -7,33 +10,42 @@ def get_url_data(user):
     
 def create_url(data, user):
     url = data.get("url")
-    exists = Url.objects.filter(user=user, original_url=data.get("url"))
-    if exists:
-        return False, "Url already exists"
-    else:
-        print("rannnnnnn")
-        url = Url.objects.create(user=user, original_url=url, short_url="https://google.com/11")
-        print("url")
-        return url, False
+    url_slug = generate_url_slug()
+    app_host_url = os.getenv("APP_BASE_URL", "https://corto.sh/")
+    short_url = app_host_url + url_slug
+    url = Url.objects.create(user=user, original_url=url, short_url=short_url, slug=url_slug)
+    return url, False
 
 def get_url_details(id, user):
     url = Url.objects.filter(user=user, id=id).first()
     return url
 
 def update_url_details(data, id, user):
-    qs = Url.objects.filter(user=user, id=id)
-    if not qs.exists():
-        return None
+    with transaction.atomic():
+        qs = Url.objects.filter(user=user, id=id)
+        if not qs.exists():
+            return None
 
-    qs.update(**data)
-    return qs.first()
+        qs.update(**data)
+        return qs.first()
     
 
-def delete_url_data(id, user):
-    qs = Url.objects.filter(user=user, id=id)
-    count, _ = qs.delete()
+def delete_url_data(url_id, user):
+    with transaction.atomic():
+        qs = Url.objects.filter(user=user, id=url_id)
 
-    if count > 0:
-        return True, "Deleted Successfully"
+        if not qs.exists():
+            return False, "URL doesn't exist"
+
+        qs.delete()
+        return True, "Deleted successfully"
+
+
+def get_url_details_from_slug(slug):
+    print("SLUGGGGGG ===> ", slug )
+    url = Url.objects.filter(slug=slug).first()
+    print("RETURNED URL FROM SLUG => ", url)
+    if not url:
+        return None
     else:
-        return False, "Url doesnt exist"
+        return url

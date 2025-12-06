@@ -12,10 +12,11 @@ class UrlCreateSerializer(serializers.ModelSerializer):
 class UrlReadSerializer(serializers.ModelSerializer):
 
     url = serializers.URLField(source="original_url")
+    short_code = serializers.CharField(source="slug")
 
     class Meta:
         model = Url
-        fields = ['url', 'short_url', 'created_at', 'id']
+        fields = ['url', 'short_url', 'created_at', 'id', 'short_code']
 
 class AnalyticsDataReadSerializer(serializers.ModelSerializer):
 
