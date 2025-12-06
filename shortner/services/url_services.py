@@ -3,9 +3,15 @@ from django.db import transaction
 from .url_generate import generate_url_slug
 import os
 
+def check_slug_exists(slug):
+    url = Url.objects.filter(slug=slug)
+    if url:
+        return True
+    else:
+        return False
+
 def get_url_data(user):
     url_data = Url.objects.filter(user=user)
-    print("url data in get url data => ", url_data)
     return url_data
     
 def create_url(data, user):
@@ -13,8 +19,18 @@ def create_url(data, user):
     url_slug = generate_url_slug()
     app_host_url = os.getenv("APP_BASE_URL", "https://corto.sh/")
     short_url = app_host_url + url_slug
-    url = Url.objects.create(user=user, original_url=url, short_url=short_url, slug=url_slug)
-    return url, False
+
+    max_retries = 5
+    for _ in range(max_retries):
+        url_slug = generate_url_slug()
+
+        check_if_exists = check_slug_exists(url_slug)
+        if not check_if_exists:
+            url = Url.objects.create(user=user, original_url=url, short_url=short_url, slug=url_slug)
+            return url, False
+
+    
+    return None, "Could not generate unique slug"
 
 def get_url_details(id, user):
     url = Url.objects.filter(user=user, id=id).first()
@@ -42,9 +58,7 @@ def delete_url_data(url_id, user):
 
 
 def get_url_details_from_slug(slug):
-    print("SLUGGGGGG ===> ", slug )
     url = Url.objects.filter(slug=slug).first()
-    print("RETURNED URL FROM SLUG => ", url)
     if not url:
         return None
     else:

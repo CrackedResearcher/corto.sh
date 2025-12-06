@@ -6,8 +6,4 @@ CHAR_LIST = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q'
         '0','1','2','3','4','5','6','7']
 
 def generate_url_slug():
-    slug = ""
-    for i in range(MAX_LENGTH):
-        slug +=  random.choice(CHAR_LIST)
-    
-    return slug
+    return ''.join(random.choices(CHAR_LIST, k=MAX_LENGTH))
