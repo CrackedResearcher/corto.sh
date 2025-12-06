@@ -80,7 +80,6 @@ def update_visit_count(slug):
 
 def get_analytics_for_url(slug):
     analysis_obj = AnalyticData.objects.filter(url__slug=slug).first()
-    print("ANALYSIS DATA ==>", analysis_obj)
     if not analysis_obj:
         return None
     else:
