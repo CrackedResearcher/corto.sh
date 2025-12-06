@@ -1,0 +1,9 @@
+# Ignore the folder where these files are created
+__pycache__/
+
+# Ignore specific compiled file extensions everywhere
+*.pyc
+*.pyo
+*.pyd
+
+.DS_Store
